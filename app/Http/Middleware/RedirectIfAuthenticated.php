@@ -23,12 +23,13 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 $user = Auth::user();
 
-                // REDIRECT BASED ON ROLE
-                if ($user->isAdmin()) {
-                    return redirect(route('admin.dashboard'));
+                // REDIRECT BERDASARKAN ROLE DENGAN BENAR
+                if ($user && $user->isAdmin()) {
+                    return redirect()->route('admin.dashboard');
                 }
 
-                return redirect(RouteServiceProvider::HOME);
+                // UNTUK USER BIASA, REDIRECT KE HOME
+                return redirect('/');
             }
         }
 

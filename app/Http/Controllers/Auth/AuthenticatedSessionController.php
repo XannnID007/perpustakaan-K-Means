@@ -40,7 +40,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        // UNTUK USER BIASA, REDIRECT KE HOME PAGE (/)
+        return redirect()->intended('/');
     }
 
     /**

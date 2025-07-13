@@ -18,8 +18,15 @@ class CheckUserRole
         if (auth()->check()) {
             $user = auth()->user();
 
+            // HAPUS ATAU KOMENTAR LOGIKA INI KARENA TERLALU AGGRESSIVE
             // Jika admin mengakses halaman user, redirect ke admin
-            if ($user->isAdmin() && !$request->is('admin*') && !$request->is('api*') && !$request->is('logout')) {
+            // if ($user->isAdmin() && !$request->is('admin*') && !$request->is('api*') && !$request->is('logout')) {
+            //     return redirect()->route('admin.dashboard');
+            // }
+
+            // ATAU GUNAKAN LOGIKA YANG LEBIH SPESIFIK
+            // Hanya redirect admin jika mereka mencoba akses dashboard user
+            if ($user->isAdmin() && $request->is('dashboard')) {
                 return redirect()->route('admin.dashboard');
             }
         }

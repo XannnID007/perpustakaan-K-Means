@@ -15,6 +15,7 @@
             <!-- Login Card -->
             <div class="card">
                 <div class="card-body">
+                    <!-- PASTIKAN FORM ACTION MENGARAH KE ROUTE LOGIN YANG BENAR -->
                     <form method="POST" action="{{ route('login') }}" class="space-y-4">
                         @csrf
 
