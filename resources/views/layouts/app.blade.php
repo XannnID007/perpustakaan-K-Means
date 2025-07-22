@@ -20,7 +20,7 @@
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2">
                         <span class="text-2xl">📚</span>
-                        <span class="text-xl font-semibold text-primary-800">Perpustakaan</span>
+                        <span class="text-xl font-semibold text-primary-800">Relib</span>
                     </a>
 
                     <!-- Navigation Links -->

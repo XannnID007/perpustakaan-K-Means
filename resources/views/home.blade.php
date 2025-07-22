@@ -127,7 +127,7 @@
                 <p class="text-lg text-gray-600">Ribuan buku menanti untuk dieksplorasi</p>
             </div>
 
-            <!-- Modern Cards -->
+            <!-- Modern Cards with Images -->
             <div class="space-y-6">
                 @foreach ($kategori as $index => $kat)
                     <div
@@ -136,12 +136,21 @@
                             <!-- Left: Category Info -->
                             <div class="flex-1 p-8">
                                 <div class="flex items-start space-x-6">
-                                    <!-- Large Icon -->
+                                    <!-- Category Image -->
                                     <div class="flex-shrink-0">
                                         <div
-                                            class="w-20 h-20 bg-gradient-to-br from-primary-100 via-primary-200 to-primary-300 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
-                                            <span
-                                                class="text-3xl font-bold text-primary-700">{{ substr($kat->nama, 0, 1) }}</span>
+                                            class="w-20 h-20 bg-gradient-to-br from-primary-100 via-primary-200 to-primary-300 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                                            @if ($kat->slug === 'fiksi')
+                                                <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                                    alt="Fiksi" class="w-full h-full object-cover" />
+                                            @elseif($kat->slug === 'non-fiksi')
+                                                <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                                    alt="Non-Fiksi" class="w-full h-full object-cover" />
+                                            @else
+                                                <!-- Fallback icon for other categories -->
+                                                <span
+                                                    class="text-3xl font-bold text-primary-700">{{ substr($kat->nama, 0, 1) }}</span>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -186,11 +195,7 @@
                             <div class="md:w-48 bg-gray-50 p-8 flex flex-col justify-center">
                                 <div class="text-center">
                                     <div class="text-3xl font-bold text-primary-600 mb-2">{{ $kat->buku_count ?? 0 }}</div>
-                                    <div class="text-sm text-gray-600 mb-4">Total Buku</div>
-
-                                    <div class="text-xl font-semibold text-gray-800 mb-1">{{ $kat->subKategori->count() }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">Sub Kategori</div>
+                                    <div class="text-sm text-gray-600">Total Buku</div>
                                 </div>
                             </div>
                         </div>

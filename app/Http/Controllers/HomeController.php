@@ -23,9 +23,14 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
+        // Load kategori dengan jumlah buku yang aktif
         $kategori = KategoriUtama::with(['subKategori' => function ($query) {
             $query->limit(5);
-        }])->get();
+        }])
+            ->withCount(['buku' => function ($query) {
+                $query->where('aktif', true);
+            }])
+            ->get();
 
         // Rekomendasi untuk user yang login
         $rekomendasi = [];
