@@ -75,6 +75,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/clustering/status', [App\Http\Controllers\RecommendationController::class, 'clusteringStatus'])
         ->name('clustering.status');
+
+    Route::delete('/clustering/clear', [RecommendationController::class, 'clearClustering'])
+        ->name('clustering.clear');
 });
 
 // API Routes for AJAX
