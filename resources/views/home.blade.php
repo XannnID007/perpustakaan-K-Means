@@ -28,7 +28,7 @@
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">
-                        📚 Koleksi Lengkap
+                        Koleksi Lengkap
                     </h1>
                     <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
                         Ribuan buku dari berbagai genre dan kategori menanti Anda. Dari fiksi hingga non-fiksi, temukan
@@ -44,7 +44,7 @@
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">
-                        🎯 Rekomendasi Personal
+                        Rekomendasi Personal
                     </h1>
                     <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
                         Dapatkan rekomendasi buku yang disesuaikan dengan preferensi dan riwayat membaca Anda.
@@ -161,18 +161,27 @@
                                         </h3>
                                         <p class="text-gray-600 mb-4 leading-relaxed">{{ $kat->deskripsi }}</p>
 
+                                        {{-- Debug info --}}
+                                        @if (config('app.debug'))
+                                            <div class="text-xs text-red-500 mb-2">
+                                                Debug: {{ $kat->subKategori->count() }} sub kategori
+                                            </div>
+                                        @endif
+
                                         <!-- Sub Categories Tags -->
                                         <div class="flex flex-wrap gap-2 mb-6">
-                                            @foreach ($kat->subKategori->take(4) as $sub)
+                                            @forelse ($kat->subKategori->take(5) as $sub)
                                                 <span
                                                     class="inline-block px-3 py-1 bg-gray-100 hover:bg-primary-100 text-gray-700 hover:text-primary-700 text-sm rounded-full transition-colors cursor-pointer">
                                                     {{ $sub->nama }}
                                                 </span>
-                                            @endforeach
-                                            @if ($kat->subKategori->count() > 4)
+                                            @empty
+                                                <span class="text-sm text-gray-500 italic">Belum ada sub kategori</span>
+                                            @endforelse
+                                            @if ($kat->subKategori->count() > 5)
                                                 <span
                                                     class="inline-block px-3 py-1 bg-gray-200 text-gray-500 text-sm rounded-full">
-                                                    +{{ $kat->subKategori->count() - 4 }} lainnya
+                                                    +{{ $kat->subKategori->count() - 5 }} lainnya
                                                 </span>
                                             @endif
                                         </div>

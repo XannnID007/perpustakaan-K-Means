@@ -20,7 +20,7 @@
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2">
                         <span class="text-2xl">📚</span>
-                        <span class="text-xl font-semibold text-primary-800">Relib</span>
+                        <span class="text-xl font-semibold text-primary-800">Perpustakaan</span>
                     </a>
 
                     <!-- Navigation Links -->
@@ -114,10 +114,10 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-cream-200 mt-16">
+    <footer class="bg-gradient-to-r from-primary-500 to-primary-600 text-center">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
-                <p class="text-sm text-gray-600">&copy; {{ date('Y') }} Perpustakaan Digital. Semua hak dilindungi.
+                <p class="text-sm text-white">&copy; {{ date('Y') }} Perpustakaan Digital. Semua hak dilindungi.
                 </p>
             </div>
         </div>

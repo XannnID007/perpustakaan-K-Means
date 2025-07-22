@@ -1,12 +1,12 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 @layer base {
     body {
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         background-color: #fefcfb;
         color: #553f2d;
     }
@@ -16,52 +16,141 @@
     .btn {
         @apply px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out;
     }
-    
+
     .btn-primary {
         @apply bg-primary-600 text-white;
     }
-    
+
     .btn-primary:hover {
         @apply bg-primary-700;
     }
-    
+
     .btn-secondary {
         @apply bg-cream-100 text-primary-800 border border-cream-200;
     }
-    
+
     .btn-secondary:hover {
         @apply bg-cream-200;
     }
-    
+
     .btn-outline {
         @apply border border-primary-300 text-primary-700 bg-transparent;
     }
-    
+
     .btn-outline:hover {
         @apply bg-primary-50;
     }
-    
+
     .card {
         @apply bg-white rounded-lg shadow-sm border border-cream-200;
     }
-    
+
     .card-body {
         @apply p-4;
     }
-    
+
     .input-field {
         @apply block w-full px-3 py-2 border border-cream-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500;
     }
-    
+
     .sidebar-link {
         @apply flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 rounded-lg;
     }
-    
+
     .sidebar-link:hover {
         @apply bg-cream-100 text-primary-700;
     }
-    
+
     .sidebar-link.active {
         @apply bg-primary-100 text-primary-800 border-r-2 border-primary-600;
+    }
+}
+
+nav[role="navigation"] {
+    @apply bg-white border-t border-brown-200 px-4 py-4;
+}
+
+/* Text info pagination */
+nav[role="navigation"] p {
+    @apply text-sm text-brown-600 font-medium;
+}
+
+nav[role="navigation"] p span {
+    @apply font-semibold text-brown-800;
+}
+
+/* Link pagination normal */
+nav[role="navigation"] a {
+    @apply relative inline-flex items-center px-3 py-2 text-sm font-medium text-brown-600 bg-white border border-brown-200 hover:text-brown-800 hover:bg-brown-50 transition-all duration-200;
+}
+
+/* Link pagination dengan border */
+nav[role="navigation"] a:not(:first-child) {
+    @apply -ml-px;
+}
+
+/* Current page (active) */
+nav[role="navigation"] span[aria-current="page"] span {
+    @apply relative inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-primary-600 border border-primary-600 -ml-px;
+}
+
+/* Disabled links */
+nav[role="navigation"] span[aria-disabled="true"] span {
+    @apply relative inline-flex items-center px-3 py-2 text-sm font-medium text-brown-400 bg-white border border-brown-200 cursor-default -ml-px;
+}
+
+/* Rounded corners untuk first dan last */
+nav[role="navigation"] span:first-child span,
+nav[role="navigation"] a:first-child {
+    @apply rounded-l-md ml-0;
+}
+
+nav[role="navigation"] span:last-child span,
+nav[role="navigation"] a:last-child {
+    @apply rounded-r-md;
+}
+
+/* Arrow icons dalam pagination */
+nav[role="navigation"] svg {
+    @apply w-4 h-4;
+}
+
+/* Mobile pagination */
+.flex.justify-between.flex-1.sm\\:hidden {
+    @apply space-x-3;
+}
+
+.flex.justify-between.flex-1.sm\\:hidden a {
+    @apply px-4 py-2 text-sm font-medium text-brown-700 bg-white border border-brown-200 rounded-lg hover:bg-brown-50 hover:text-brown-800 transition-all duration-200;
+}
+
+.flex.justify-between.flex-1.sm\\:hidden span {
+    @apply px-4 py-2 text-sm font-medium text-brown-400 bg-white border border-brown-200 rounded-lg cursor-default;
+}
+
+/* Hover effects yang lebih smooth */
+nav[role="navigation"] a:hover {
+    @apply bg-brown-50 border-brown-300 shadow-sm transform scale-105;
+}
+
+/* Focus states untuk accessibility */
+nav[role="navigation"] a:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-opacity-50 border-primary-300 z-10;
+}
+
+/* Container wrapper dengan sedikit shadow */
+.pagination-wrapper {
+    @apply bg-white rounded-lg shadow-sm border border-brown-100;
+}
+
+/* Responsive text */
+@media (max-width: 640px) {
+    nav[role="navigation"] p {
+        @apply text-xs;
+    }
+
+    nav[role="navigation"] a,
+    nav[role="navigation"] span span {
+        @apply px-2 py-1 text-xs;
     }
 }

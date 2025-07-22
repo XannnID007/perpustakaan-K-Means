@@ -71,6 +71,11 @@ Route::middleware('auth')->prefix('api')->group(function () {
     Route::post('/progress', [App\Http\Controllers\Api\ProgressController::class, 'save']);
     Route::post('/bookmark', [App\Http\Controllers\Api\BookmarkController::class, 'store']);
     Route::delete('/bookmark/{bookmark}', [App\Http\Controllers\Api\BookmarkController::class, 'destroy']);
+
+    Route::post('/rating', [App\Http\Controllers\Api\RatingController::class, 'store']);
+    Route::put('/rating/{rating}', [App\Http\Controllers\Api\RatingController::class, 'update']);
+    Route::delete('/rating/{rating}', [App\Http\Controllers\Api\RatingController::class, 'destroy']);
+    Route::get('/rating/{buku_id}', [App\Http\Controllers\Api\RatingController::class, 'getRatings']);
 });
 
 // Auth routes (handled by Breeze)

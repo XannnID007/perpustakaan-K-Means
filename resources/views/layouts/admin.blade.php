@@ -17,7 +17,7 @@
         <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-sm border-r border-cream-200 z-50">
             <!-- Logo -->
             <div class="flex items-center justify-center h-16 border-b border-cream-200">
-                <h1 class="text-xl font-semibold text-primary-800">📚 Relib</h1>
+                <h1 class="text-xl font-semibold text-primary-800">📚 Perpustakaan</h1>
             </div>
 
             <!-- Navigation -->

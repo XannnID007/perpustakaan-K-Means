@@ -8,8 +8,6 @@
                     <span class="text-4xl">📚</span>
                 </div>
                 <h2 class="mt-4 text-2xl font-semibold text-gray-900">Daftar Akun Baru</h2>
-                <p class="mt-2 text-sm text-gray-600">Sudah punya akun? <a href="{{ route('login') }}"
-                        class="font-medium text-primary-600">Masuk di sini</a></p>
             </div>
 
             <!-- Register Card -->
@@ -65,6 +63,10 @@
                             Daftar
                         </button>
                     </form>
+                    <div class="text-center">
+                        <p class="mt-4 text-sm text-gray-600">Sudah punya akun? <a href="{{ route('login') }}"
+                                class="font-medium text-primary-600">Masuk di sini</a></p>
+                    </div>
                 </div>
             </div>
         </div>

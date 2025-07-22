@@ -163,7 +163,7 @@
             </div>
 
             @if ($buku->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200"> <!-- INCREASED PADDING -->
+                <div class="pagination-wrapper">
                     {{ $buku->links() }}
                 </div>
             @endif

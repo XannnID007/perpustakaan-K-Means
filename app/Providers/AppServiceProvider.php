@@ -21,8 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Use Bootstrap 5 for pagination
-        Paginator::useBootstrapFive();
+        // Use Tailwind CSS for pagination (mengganti Bootstrap)
+        Paginator::defaultView('pagination::tailwind');
+        Paginator::defaultSimpleView('pagination::simple-tailwind');
 
         // Share authenticated user with all views
         View::composer('*', function ($view) {
