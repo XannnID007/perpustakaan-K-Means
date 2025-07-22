@@ -5,8 +5,129 @@
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Rekomendasi untuk Anda</h1>
-            <p class="text-gray-600">Buku-buku yang mungkin Anda sukai berdasarkan preferensi membaca</p>
+            <p class="text-gray-600">Buku-buku yang dipersonalisasi berdasarkan pola membaca Anda</p>
         </div>
+
+        {{-- Info Cluster User (Jika Ada) --}}
+        @if (isset($userClusterInfo))
+            <div class="card mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                <div class="card-body">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-1">
+                                🎯 Profil Anda: {{ $userClusterInfo['name'] }}
+                            </h3>
+                            <p class="text-blue-700 mb-3">{{ $userClusterInfo['description'] }}</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div class="bg-white bg-opacity-50 rounded p-3">
+                                    <div class="font-medium text-blue-900">Preferensi Fiksi</div>
+                                    <div class="text-2xl font-bold text-blue-600">
+                                        {{ round($userClusterInfo['avg_fiction_ratio'] * 100) }}%
+                                    </div>
+                                </div>
+                                <div class="bg-white bg-opacity-50 rounded p-3">
+                                    <div class="font-medium text-blue-900">Rata-rata Buku</div>
+                                    <div class="text-2xl font-bold text-blue-600">
+                                        {{ round($userClusterInfo['avg_total_books']) }}
+                                    </div>
+                                </div>
+                                <div class="bg-white bg-opacity-50 rounded p-3">
+                                    <div class="font-medium text-blue-900">Rata-rata Rating</div>
+                                    <div class="text-2xl font-bold text-blue-600">
+                                        {{ number_format($userClusterInfo['avg_rating'], 1) }}/5
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 text-xs text-blue-600">
+                                💡 Rekomendasi berikut dibuat berdasarkan {{ $userClusterInfo['user_count'] }} pembaca
+                                dengan profil serupa
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Berdasarkan Pembaca Serupa (Jika menggunakan K-Means) --}}
+        @if (isset($categoryRecommendations) && $categoryRecommendations->count() > 0)
+            <section class="mb-12">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">
+                        {{ isset($userClusterInfo) ? '👥 Disukai Pembaca Serupa' : 'Berdasarkan Preferensi Anda' }}
+                    </h2>
+                    <p class="text-gray-600">
+                        {{ isset($userClusterInfo)
+                            ? 'Buku yang disukai oleh pembaca dengan profil serupa dengan Anda'
+                            : 'Rekomendasi berdasarkan buku yang pernah Anda baca' }}
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                    @foreach ($categoryRecommendations as $buku)
+                        <div class="card hover:shadow-lg transition-shadow">
+                            <div class="p-3">
+                                <a href="{{ route('buku.show', $buku) }}" class="block">
+                                    <div
+                                        class="aspect-[3/4] bg-primary-100 rounded mb-3 flex items-center justify-center overflow-hidden">
+                                        @if ($buku->gambar_sampul)
+                                            <img src="{{ $buku->gambar_sampul_url }}" alt="{{ $buku->judul }}"
+                                                class="w-full h-full object-cover">
+                                        @else
+                                            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                                                </path>
+                                            </svg>
+                                        @endif
+                                    </div>
+                                </a>
+
+                                <h3 class="font-medium text-sm text-gray-900 mb-1 line-clamp-2">
+                                    <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                </h3>
+                                <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+
+                                <div class="flex items-center justify-between text-xs mb-2">
+                                    <span class="text-gray-500">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                    <div class="flex items-center space-x-1">
+                                        <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                            </path>
+                                        </svg>
+                                        <span class="text-gray-600">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                    </div>
+                                </div>
+
+                                {{-- Badge khusus jika dari clustering --}}
+                                @if (isset($userClusterInfo))
+                                    <div class="text-xs mb-2">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                            🤝 Cluster Match
+                                        </span>
+                                    </div>
+                                @endif
+
+                                <a href="{{ route('buku.show', $buku) }}"
+                                    class="block btn btn-primary w-full text-xs py-1.5">
+                                    Lihat Detail
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         @php
             $user = auth()->user();
@@ -217,7 +338,8 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('buku.show', $buku) }}" class="block btn btn-primary w-full text-xs py-1.5">
+                            <a href="{{ route('buku.show', $buku) }}"
+                                class="block btn btn-primary w-full text-xs py-1.5">
                                 Lihat Detail
                             </a>
                         </div>

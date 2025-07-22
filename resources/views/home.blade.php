@@ -120,7 +120,7 @@
             @endif
         @endauth
 
-        <!-- Kategori -->
+        <!-- Kategori Section dengan Debug -->
         <section class="mb-16">
             <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Pilih Kategori Favorit</h2>
@@ -129,7 +129,7 @@
 
             <!-- Modern Cards with Images -->
             <div class="space-y-6">
-                @foreach ($kategori as $index => $kat)
+                @forelse($kategori as $index => $kat)
                     <div
                         class="group relative bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
                         <div class="flex flex-col md:flex-row">
@@ -161,16 +161,9 @@
                                         </h3>
                                         <p class="text-gray-600 mb-4 leading-relaxed">{{ $kat->deskripsi }}</p>
 
-                                        {{-- Debug info --}}
-                                        @if (config('app.debug'))
-                                            <div class="text-xs text-red-500 mb-2">
-                                                Debug: {{ $kat->subKategori->count() }} sub kategori
-                                            </div>
-                                        @endif
-
                                         <!-- Sub Categories Tags -->
                                         <div class="flex flex-wrap gap-2 mb-6">
-                                            @forelse ($kat->subKategori->take(5) as $sub)
+                                            @forelse($kat->subKategori as $sub)
                                                 <span
                                                     class="inline-block px-3 py-1 bg-gray-100 hover:bg-primary-100 text-gray-700 hover:text-primary-700 text-sm rounded-full transition-colors cursor-pointer">
                                                     {{ $sub->nama }}
@@ -178,12 +171,6 @@
                                             @empty
                                                 <span class="text-sm text-gray-500 italic">Belum ada sub kategori</span>
                                             @endforelse
-                                            @if ($kat->subKategori->count() > 5)
-                                                <span
-                                                    class="inline-block px-3 py-1 bg-gray-200 text-gray-500 text-sm rounded-full">
-                                                    +{{ $kat->subKategori->count() - 5 }} lainnya
-                                                </span>
-                                            @endif
                                         </div>
 
                                         <!-- Action Button -->
@@ -214,7 +201,11 @@
                             class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary-100 to-transparent opacity-50 rounded-bl-3xl">
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="text-center py-12">
+                        <p class="text-gray-500">Tidak ada kategori ditemukan</p>
+                    </div>
+                @endforelse
             </div>
         </section>
 

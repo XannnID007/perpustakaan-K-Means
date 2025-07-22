@@ -23,14 +23,18 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
-        // Load kategori dengan jumlah buku yang aktif
+        // PERBAIKAN: Load kategori dengan sub kategori yang benar
         $kategori = KategoriUtama::with(['subKategori' => function ($query) {
-            $query->limit(5);
+            // Tidak batasi jumlah sub kategori untuk debugging
+            // $query->limit(5);
         }])
             ->withCount(['buku' => function ($query) {
                 $query->where('aktif', true);
             }])
             ->get();
+
+        // DEBUG: Tambahkan logging untuk melihat data yang dimuat
+        \Log::info('Kategori loaded:', $kategori->toArray());
 
         // Rekomendasi untuk user yang login
         $rekomendasi = [];
