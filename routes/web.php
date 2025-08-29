@@ -61,23 +61,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', AdminUserController::class)->only(['index', 'show']);
 
     // Reports
-    Route::get('/laporan', function () {
-        return view('admin.laporan');
-    })->name('laporan');
+    Route::get('/laporan', [App\Http\Controllers\Admin\LaporanController::class, 'index'])->name('laporan');
+    Route::get('/laporan/export-pdf', [App\Http\Controllers\Admin\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
 
     // K-Means Clustering Routes
     Route::get('/clustering', function () {
         return view('admin.clustering');
     })->name('clustering');
 
-    Route::post('/clustering/run', [RecommendationController::class, 'runClustering'])
+    Route::post('/clustering/run', [App\Http\Controllers\RecommendationController::class, 'runClustering'])
         ->name('clustering.run');
 
-    Route::get('/clustering/status', [RecommendationController::class, 'clusteringStatus'])
+    Route::get('/clustering/status', [App\Http\Controllers\RecommendationController::class, 'clusteringStatus'])
         ->name('clustering.status');
-
-    Route::post('/clustering/clear', [RecommendationController::class, 'clearClustering'])
-        ->name('clustering.clear');
 });
 
 // API Routes for AJAX

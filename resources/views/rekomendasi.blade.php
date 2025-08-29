@@ -66,33 +66,33 @@
                                 <div
                                     class="bg-white bg-opacity-60 backdrop-blur-sm rounded-lg p-4 text-center border border-indigo-200">
                                     <div class="text-2xl font-bold text-indigo-600 mb-1">
-                                        {{ round($userClusterInfo['avg_fiction_preference'] * 100) }}%
+                                        {{ round(($userClusterInfo['avg_fiction_preference'] ?? 0.5) * 100) }}%
                                     </div>
                                     <div class="text-sm font-medium text-indigo-900">Preferensi Fiksi</div>
                                     <div class="text-xs text-indigo-600 mt-1">
-                                        {{ round($userClusterInfo['avg_fiction_preference'] * 100) > 50 ? 'Lebih suka cerita imajinatif' : 'Lebih suka fakta & pembelajaran' }}
+                                        {{ round(($userClusterInfo['avg_fiction_preference'] ?? 0.5) * 100) > 50 ? 'Lebih suka cerita imajinatif' : 'Lebih suka fakta & pembelajaran' }}
                                     </div>
                                 </div>
 
                                 <div
                                     class="bg-white bg-opacity-60 backdrop-blur-sm rounded-lg p-4 text-center border border-indigo-200">
                                     <div class="text-2xl font-bold text-blue-600 mb-1">
-                                        {{ round($userClusterInfo['avg_total_books']) }}
+                                        {{ round($userClusterInfo['avg_total_books'] ?? 0) }}
                                     </div>
                                     <div class="text-sm font-medium text-indigo-900">Rata-rata Buku</div>
                                     <div class="text-xs text-blue-600 mt-1">
-                                        {{ round($userClusterInfo['avg_total_books']) > 10 ? 'Pembaca aktif' : 'Pembaca kasual' }}
+                                        {{ round($userClusterInfo['avg_total_books'] ?? 0) > 10 ? 'Pembaca aktif' : 'Pembaca kasual' }}
                                     </div>
                                 </div>
 
                                 <div
                                     class="bg-white bg-opacity-60 backdrop-blur-sm rounded-lg p-4 text-center border border-indigo-200">
                                     <div class="text-2xl font-bold text-cyan-600 mb-1">
-                                        {{ number_format($userClusterInfo['avg_rating'], 1) }}/5
+                                        {{ number_format($userClusterInfo['avg_rating'] ?? 3.5, 1) }}/5
                                     </div>
                                     <div class="text-sm font-medium text-indigo-900">Standar Rating</div>
                                     <div class="text-xs text-cyan-600 mt-1">
-                                        {{ $userClusterInfo['avg_rating'] > 4 ? 'Standar tinggi' : ($userClusterInfo['avg_rating'] > 3.5 ? 'Standar sedang' : 'Mudah puas') }}
+                                        {{ ($userClusterInfo['avg_rating'] ?? 3.5) > 4 ? 'Standar tinggi' : (($userClusterInfo['avg_rating'] ?? 3.5) > 3.5 ? 'Standar sedang' : 'Mudah puas') }}
                                     </div>
                                 </div>
 
@@ -138,8 +138,8 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                     @foreach ($categoryRecommendations as $buku)
-                        <div class="card hover:shadow-lg transition-all duration-300 group">
-                            <div class="p-3">
+                        <div class="card hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                            <div class="p-3 flex-1 flex flex-col">
                                 <a href="{{ route('buku.show', $buku) }}" class="block">
                                     <div
                                         class="aspect-[3/4] bg-primary-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
@@ -166,28 +166,33 @@
                                     </div>
                                 </a>
 
-                                <h3
-                                    class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
-                                    <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
-                                </h3>
-                                <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+                                <!-- Content dengan flex untuk push button ke bawah -->
+                                <div class="flex-1 flex flex-col">
+                                    <h3
+                                        class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors flex-1">
+                                        <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
 
-                                <div class="flex items-center justify-between text-xs mb-2">
-                                    <span class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
-                                    <div class="flex items-center space-x-1 ml-2">
-                                        <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
+                                    <div class="flex items-center justify-between text-xs mb-2">
                                         <span
-                                            class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                            class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                        <div class="flex items-center space-x-1 ml-2">
+                                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span
+                                                class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <a href="{{ route('buku.show', $buku) }}"
-                                    class="block btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all">
-                                    Lihat Detail
-                                </a>
+                                    <!-- Button di bagian paling bawah dengan mt-auto -->
+                                    <a href="{{ route('buku.show', $buku) }}"
+                                        class="btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all mt-auto">
+                                        Lihat Detail
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -198,7 +203,7 @@
         <!-- Genre Specific Sections Based on User Cluster -->
         @if (isset($userClusterInfo))
             @php
-                $fictionPref = $userClusterInfo['avg_fiction_preference'];
+                $fictionPref = $userClusterInfo['avg_fiction_preference'] ?? 0.5;
                 $showFiction = $fictionPref > 0.3; // Show fiction if preference > 30%
                 $showNonFiction = $fictionPref < 0.7; // Show non-fiction if preference < 70%
             @endphp
@@ -235,8 +240,8 @@
 
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                         @foreach ($fictionBooks as $buku)
-                            <div class="card hover:shadow-lg transition-all duration-300 group">
-                                <div class="p-3">
+                            <div class="card hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                                <div class="p-3 flex-1 flex flex-col">
                                     <a href="{{ route('buku.show', $buku) }}" class="block">
                                         <div
                                             class="aspect-[3/4] bg-purple-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
@@ -261,29 +266,34 @@
                                         </div>
                                     </a>
 
-                                    <h3
-                                        class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-purple-600 transition-colors">
-                                        <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
-                                    </h3>
-                                    <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+                                    <!-- Content dengan flex untuk push button ke bawah -->
+                                    <div class="flex-1 flex flex-col">
+                                        <h3
+                                            class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-purple-600 transition-colors flex-1">
+                                            <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                        </h3>
+                                        <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
 
-                                    <div class="flex items-center justify-between text-xs mb-2">
-                                        <span
-                                            class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
-                                        <div class="flex items-center space-x-1 ml-2">
-                                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
+                                        <div class="flex items-center justify-between text-xs mb-2">
                                             <span
-                                                class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                                class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                            <div class="flex items-center space-x-1 ml-2">
+                                                <svg class="w-3 h-3 text-yellow-400" fill="currentColor"
+                                                    viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                <span
+                                                    class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <a href="{{ route('buku.show', $buku) }}"
-                                        class="block btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-purple-600 hover:bg-purple-700">
-                                        Lihat Detail
-                                    </a>
+                                        <!-- Button di bagian paling bawah dengan mt-auto -->
+                                        <a href="{{ route('buku.show', $buku) }}"
+                                            class="btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-purple-600 hover:bg-purple-700 mt-auto">
+                                            Lihat Detail
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -323,8 +333,8 @@
 
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                         @foreach ($nonFictionBooks as $buku)
-                            <div class="card hover:shadow-lg transition-all duration-300 group">
-                                <div class="p-3">
+                            <div class="card hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                                <div class="p-3 flex-1 flex flex-col">
                                     <a href="{{ route('buku.show', $buku) }}" class="block">
                                         <div
                                             class="aspect-[3/4] bg-blue-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
@@ -349,29 +359,34 @@
                                         </div>
                                     </a>
 
-                                    <h3
-                                        class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                                        <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
-                                    </h3>
-                                    <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+                                    <!-- Content dengan flex untuk push button ke bawah -->
+                                    <div class="flex-1 flex flex-col">
+                                        <h3
+                                            class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors flex-1">
+                                            <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                        </h3>
+                                        <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
 
-                                    <div class="flex items-center justify-between text-xs mb-2">
-                                        <span
-                                            class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
-                                        <div class="flex items-center space-x-1 ml-2">
-                                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
+                                        <div class="flex items-center justify-between text-xs mb-2">
                                             <span
-                                                class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                                class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                            <div class="flex items-center space-x-1 ml-2">
+                                                <svg class="w-3 h-3 text-yellow-400" fill="currentColor"
+                                                    viewBox="0 0 20 20">
+                                                    <path
+                                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                <span
+                                                    class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <a href="{{ route('buku.show', $buku) }}"
-                                        class="block btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-blue-600 hover:bg-blue-700">
-                                        Lihat Detail
-                                    </a>
+                                        <!-- Button di bagian paling bawah dengan mt-auto -->
+                                        <a href="{{ route('buku.show', $buku) }}"
+                                            class="btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-blue-600 hover:bg-blue-700 mt-auto">
+                                            Lihat Detail
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -397,7 +412,7 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                     @foreach ($popularBooks as $buku)
-                        <div class="card hover:shadow-lg transition-all duration-300 group relative">
+                        <div class="card hover:shadow-lg transition-all duration-300 group relative h-full flex flex-col">
                             <!-- Trending Badge -->
                             <div class="absolute -top-2 -right-2 z-10">
                                 <div
@@ -406,7 +421,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-3">
+                            <div class="p-3 flex-1 flex flex-col">
                                 <a href="{{ route('buku.show', $buku) }}" class="block">
                                     <div
                                         class="aspect-[3/4] bg-red-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
@@ -431,28 +446,33 @@
                                     </div>
                                 </a>
 
-                                <h3
-                                    class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition-colors">
-                                    <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
-                                </h3>
-                                <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+                                <!-- Content dengan flex untuk push button ke bawah -->
+                                <div class="flex-1 flex flex-col">
+                                    <h3
+                                        class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-red-600 transition-colors flex-1">
+                                        <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
 
-                                <div class="flex items-center justify-between text-xs mb-2">
-                                    <span class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
-                                    <div class="flex items-center space-x-1 ml-2">
-                                        <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
+                                    <div class="flex items-center justify-between text-xs mb-2">
                                         <span
-                                            class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                            class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                        <div class="flex items-center space-x-1 ml-2">
+                                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span
+                                                class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <a href="{{ route('buku.show', $buku) }}"
-                                    class="block btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-red-600 hover:bg-red-700">
-                                    Lihat Detail
-                                </a>
+                                    <!-- Button di bagian paling bawah dengan mt-auto -->
+                                    <a href="{{ route('buku.show', $buku) }}"
+                                        class="btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-red-600 hover:bg-red-700 mt-auto">
+                                        Lihat Detail
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -473,8 +493,8 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                     @foreach ($highRatedBooks as $buku)
-                        <div class="card hover:shadow-lg transition-all duration-300 group">
-                            <div class="p-3">
+                        <div class="card hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                            <div class="p-3 flex-1 flex flex-col">
                                 <a href="{{ route('buku.show', $buku) }}" class="block">
                                     <div
                                         class="aspect-[3/4] bg-yellow-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
@@ -499,101 +519,39 @@
                                     </div>
                                 </a>
 
-                                <h3
-                                    class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-yellow-600 transition-colors">
-                                    <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
-                                </h3>
-                                <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
+                                <!-- Content dengan flex untuk push button ke bawah -->
+                                <div class="flex-1 flex flex-col">
+                                    <h3
+                                        class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 group-hover:text-yellow-600 transition-colors flex-1">
+                                        <a href="{{ route('buku.show', $buku) }}">{{ $buku->judul }}</a>
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mb-2">{{ $buku->penulis }}</p>
 
-                                <div class="flex items-center justify-between text-xs mb-2">
-                                    <span class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
-                                    <div class="flex items-center space-x-1 ml-2">
-                                        <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
+                                    <div class="flex items-center justify-between text-xs mb-2">
                                         <span
-                                            class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                            class="text-gray-500 truncate">{{ $buku->subKategori->nama ?? 'Umum' }}</span>
+                                        <div class="flex items-center space-x-1 ml-2">
+                                            <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span
+                                                class="text-gray-600 font-medium">{{ number_format($buku->rating_rata_rata, 1) }}</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <a href="{{ route('buku.show', $buku) }}"
-                                    class="block btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all bg-yellow-600 hover:bg-yellow-700">
-                                    Lihat Detail
-                                </a>
+                                    <!-- Button di bagian paling bawah dengan mt-auto -->
+                                    <a href="{{ route('buku.show', $buku) }}"
+                                        class="btn btn-primary w-full text-xs py-2 group-hover:shadow-md transition-all mt-auto">
+                                        Lihat Detail
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
             </section>
         @endif
-
-        <!-- Explore Other Categories -->
-        <section>
-            <div class="mb-6">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-2 flex items-center">
-                    <span class="mr-3">🧭</span>
-                    Jelajahi Kategori Lain
-                </h2>
-                <p class="text-gray-600">Temukan buku menarik dari kategori yang belum pernah Anda coba</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @foreach (\App\Models\KategoriUtama::withCount('buku')->get() as $kategori)
-                    <div class="card hover:shadow-lg transition-all duration-300 group">
-                        <div class="card-body">
-                            <div class="flex items-center space-x-4">
-                                <div
-                                    class="w-14 h-14 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                    @if (str_contains(strtolower($kategori->nama), 'fiksi'))
-                                        <span class="text-2xl">📚</span>
-                                    @else
-                                        <span class="text-2xl">🎓</span>
-                                    @endif
-                                </div>
-                                <div class="flex-1">
-                                    <h3
-                                        class="font-bold text-lg text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
-                                        {{ $kategori->nama }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3">{{ $kategori->deskripsi }}</p>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach ($kategori->subKategori->take(3) as $sub)
-                                                <span
-                                                    class="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                                                    {{ $sub->nama }}
-                                                </span>
-                                            @endforeach
-                                            @if ($kategori->subKategori->count() > 3)
-                                                <span
-                                                    class="text-xs text-gray-500">+{{ $kategori->subKategori->count() - 3 }}
-                                                    lainnya</span>
-                                            @endif
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="text-lg font-bold text-primary-600">{{ $kategori->buku_count }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">buku</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <a href="{{ route('buku.index', ['kategori_utama' => $kategori->id]) }}"
-                                        class="btn btn-outline group-hover:btn-primary group-hover:shadow-md transition-all">
-                                        Jelajahi
-                                        <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </section>
     </div>
 
     <style>
@@ -604,6 +562,40 @@
             overflow: hidden;
         }
 
+        /* Ensure consistent card heights dan alignment button */
+        .card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Force equal height cards dengan flex */
+        .grid .card.h-full {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .grid .card.h-full>div {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* Pastikan button selalu di bawah */
+        .grid .card.h-full .flex-1:last-child {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid .card.h-full .mt-auto {
+            margin-top: auto;
+        }
+
+        /* Custom hover animations */
         .group:hover .group-hover\:scale-105 {
             transform: scale(1.05);
         }
