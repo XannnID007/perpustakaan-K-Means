@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Buku;
-use App\Models\KategoriUtama;
 use App\Models\ProgressBaca;
 use Illuminate\Http\Request;
+use App\Models\KategoriUtama;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -34,7 +35,7 @@ class HomeController extends Controller
             ->get();
 
         // DEBUG: Tambahkan logging untuk melihat data yang dimuat
-        \Log::info('Kategori loaded:', $kategori->toArray());
+        Log::info('Kategori loaded:', $kategori->toArray());
 
         // Rekomendasi untuk user yang login
         $rekomendasi = [];

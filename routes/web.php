@@ -70,13 +70,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         return view('admin.clustering');
     })->name('clustering');
 
-    Route::post('/clustering/run', [App\Http\Controllers\RecommendationController::class, 'runClustering'])
+    Route::post('/clustering/run', [RecommendationController::class, 'runClustering'])
         ->name('clustering.run');
 
-    Route::get('/clustering/status', [App\Http\Controllers\RecommendationController::class, 'clusteringStatus'])
+    Route::get('/clustering/status', [RecommendationController::class, 'clusteringStatus'])
         ->name('clustering.status');
 
-    Route::delete('/clustering/clear', [RecommendationController::class, 'clearClustering'])
+    Route::post('/clustering/clear', [RecommendationController::class, 'clearClustering'])
         ->name('clustering.clear');
 });
 
