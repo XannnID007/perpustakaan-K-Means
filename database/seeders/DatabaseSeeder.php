@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             KategoriSeeder::class,
             BukuSeeder::class, // Add this if you want sample books
+            UserSeeder::class,
         ]);
     }
 }

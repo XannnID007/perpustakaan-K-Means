@@ -10,93 +10,68 @@ use Illuminate\Support\Facades\Cache;
 
 class SimpleKMeansService
 {
-     private $k = 3; // 3 cluster: Casual Reader, Serious Reader, Mixed Reader
+     private $k = 3;
      private $maxIterations = 50;
 
-     /**
-      * Jalankan K-Means clustering untuk semua user
-      */
      public function clusterUsers()
      {
-          // 1. Ambil data user untuk clustering
           $userData = $this->getUserFeatures();
 
           if (count($userData) < $this->k) {
-               return false; // Tidak cukup data
+               return false;
           }
 
-          // 2. Jalankan K-Means
           $clusters = $this->runKMeans($userData);
 
-          // 3. Simpan hasil ke cache (simple storage)
           Cache::put('user_clusters', $clusters, now()->addDays(7));
+          Cache::put('clustering_last_updated', now()->toDateTimeString(), now()->addDays(7));
 
-          // 4. Buat profil setiap cluster
           $this->createClusterProfiles($clusters, $userData);
 
           return $clusters;
      }
 
-     /**
-      * Ambil fitur user untuk clustering (SIMPLE - hanya 3 fitur)
-      */
      private function getUserFeatures()
      {
           $users = User::where('role', 'user')
                ->withCount(['progressBaca', 'rating'])
-               ->having('progress_baca_count', '>', 0) // Minimal pernah baca
+               ->having('progress_baca_count', '>', 0)
                ->get();
 
           $features = [];
-
           foreach ($users as $user) {
-               // Hitung fitur sederhana
                $fiksiCount = $this->getFictionBooksRead($user->id);
                $nonFiksiCount = $this->getNonFictionBooksRead($user->id);
                $avgRating = $this->getAverageRating($user->id);
+               $totalBooks = $fiksiCount + $nonFiksiCount;
 
                $features[$user->id] = [
                     'user_id' => $user->id,
-                    'fiction_ratio' => $fiksiCount / ($fiksiCount + $nonFiksiCount + 1), // 0-1
-                    'total_books' => $fiksiCount + $nonFiksiCount, // Jumlah total
-                    'avg_rating' => $avgRating ?: 3.0 // Default 3.0 jika belum rating
+                    'fiction_ratio' => $totalBooks > 0 ? $fiksiCount / $totalBooks : 0,
+                    'total_books' => $totalBooks,
+                    'avg_rating' => $avgRating ?: 3.0
                ];
           }
 
           return $features;
      }
 
-     /**
-      * Algoritma K-Means sederhana
-      */
      private function runKMeans($data)
      {
           $dataPoints = array_values($data);
-          $n = count($dataPoints);
-
-          // 1. Inisialisasi centroids secara random
           $centroids = $this->initializeCentroids($dataPoints);
-
           $assignments = [];
 
-          // 2. Iterasi K-Means
           for ($iter = 0; $iter < $this->maxIterations; $iter++) {
                $newAssignments = [];
-
-               // Assign setiap data point ke cluster terdekat
-               foreach ($dataPoints as $i => $point) {
+               foreach ($dataPoints as $point) {
                     $closestCluster = $this->findClosestCluster($point, $centroids);
                     $newAssignments[$point['user_id']] = $closestCluster;
                }
 
-               // Update centroids
                $newCentroids = $this->updateCentroids($dataPoints, $newAssignments);
 
-               // Cek konvergensi (simplified)
-               if ($assignments === $newAssignments) {
-                    break;
-               }
-
+               if ($assignments === $newAssignments) break;
                $assignments = $newAssignments;
                $centroids = $newCentroids;
           }
@@ -104,17 +79,12 @@ class SimpleKMeansService
           return $assignments;
      }
 
-     /**
-      * Inisialisasi centroids secara random
-      */
      private function initializeCentroids($data)
      {
           $centroids = [];
-
-          // Ambil 3 data point random sebagai centroid awal
           $randomIndices = array_rand($data, $this->k);
 
-          foreach ($randomIndices as $i => $index) {
+          foreach ((array) $randomIndices as $i => $index) {
                $centroids[$i] = [
                     'fiction_ratio' => $data[$index]['fiction_ratio'],
                     'total_books' => $data[$index]['total_books'],
@@ -125,9 +95,6 @@ class SimpleKMeansService
           return $centroids;
      }
 
-     /**
-      * Cari cluster terdekat untuk sebuah data point
-      */
      private function findClosestCluster($point, $centroids)
      {
           $minDistance = PHP_FLOAT_MAX;
@@ -135,7 +102,6 @@ class SimpleKMeansService
 
           foreach ($centroids as $clusterId => $centroid) {
                $distance = $this->calculateDistance($point, $centroid);
-
                if ($distance < $minDistance) {
                     $minDistance = $distance;
                     $closestCluster = $clusterId;
@@ -145,31 +111,20 @@ class SimpleKMeansService
           return $closestCluster;
      }
 
-     /**
-      * Hitung jarak Euclidean (disederhanakan)
-      */
      private function calculateDistance($point1, $point2)
      {
           $sum = 0;
           $sum += pow($point1['fiction_ratio'] - $point2['fiction_ratio'], 2);
-          $sum += pow(($point1['total_books'] - $point2['total_books']) / 100, 2); // Normalisasi
+          $sum += pow(($point1['total_books'] - $point2['total_books']) / 100, 2);
           $sum += pow($point1['avg_rating'] - $point2['avg_rating'], 2);
-
           return sqrt($sum);
      }
 
-     /**
-      * Update centroids berdasarkan assignment baru
-      */
      private function updateCentroids($dataPoints, $assignments)
      {
           $newCentroids = [];
-
-          // Untuk setiap cluster
           for ($clusterId = 0; $clusterId < $this->k; $clusterId++) {
                $clusterPoints = [];
-
-               // Ambil semua point yang assigned ke cluster ini
                foreach ($assignments as $userId => $assignedCluster) {
                     if ($assignedCluster === $clusterId) {
                          foreach ($dataPoints as $point) {
@@ -181,7 +136,6 @@ class SimpleKMeansService
                     }
                }
 
-               // Hitung rata-rata (centroid baru)
                if (count($clusterPoints) > 0) {
                     $newCentroids[$clusterId] = [
                          'fiction_ratio' => array_sum(array_column($clusterPoints, 'fiction_ratio')) / count($clusterPoints),
@@ -189,99 +143,69 @@ class SimpleKMeansService
                          'avg_rating' => array_sum(array_column($clusterPoints, 'avg_rating')) / count($clusterPoints)
                     ];
                } else {
-                    // Jika cluster kosong, gunakan centroid lama
-                    $newCentroids[$clusterId] = [
-                         'fiction_ratio' => 0.5,
-                         'total_books' => 5,
-                         'avg_rating' => 3.0
-                    ];
+                    $newCentroids[$clusterId] = ['fiction_ratio' => 0.5, 'total_books' => 5, 'avg_rating' => 3.0];
                }
           }
-
           return $newCentroids;
      }
 
-     /**
-      * Buat profil untuk setiap cluster
-      */
      private function createClusterProfiles($clusters, $userData)
      {
           $profiles = [];
+          $clusterData = [];
 
-          for ($clusterId = 0; $clusterId < $this->k; $clusterId++) {
-               $clusterUsers = array_keys(array_filter($clusters, fn($c) => $c === $clusterId));
-
-               if (count($clusterUsers) === 0) continue;
-
-               // Hitung karakteristik cluster
-               $fictionRatios = [];
-               $totalBooks = [];
-               $avgRatings = [];
-
-               foreach ($clusterUsers as $userId) {
-                    if (isset($userData[$userId])) {
-                         $fictionRatios[] = $userData[$userId]['fiction_ratio'];
-                         $totalBooks[] = $userData[$userId]['total_books'];
-                         $avgRatings[] = $userData[$userId]['avg_rating'];
-                    }
+          // Mengelompokkan data pengguna berdasarkan cluster
+          foreach ($clusters as $userId => $clusterId) {
+               if (isset($userData[$userId])) {
+                    $clusterData[$clusterId][] = $userData[$userId];
                }
+          }
+
+          // Membuat profil untuk setiap cluster
+          foreach ($clusterData as $clusterId => $users) {
+               if (empty($users)) continue;
+
+               $fictionRatios = array_column($users, 'fiction_ratio');
+               $totalBooks = array_column($users, 'total_books');
+               $avgRatings = array_column($users, 'avg_rating');
 
                $profiles[$clusterId] = [
-                    'name' => $this->getClusterName($clusterId, $fictionRatios, $totalBooks),
-                    'user_count' => count($clusterUsers),
+                    'name' => $this->getClusterName($fictionRatios),
+                    'user_count' => count($users),
                     'avg_fiction_ratio' => array_sum($fictionRatios) / count($fictionRatios),
                     'avg_total_books' => array_sum($totalBooks) / count($totalBooks),
                     'avg_rating' => array_sum($avgRatings) / count($avgRatings),
-                    'description' => $this->getClusterDescription($clusterId, $fictionRatios, $totalBooks)
+                    'description' => $this->getClusterDescription($fictionRatios)
                ];
           }
 
           Cache::put('cluster_profiles', $profiles, now()->addDays(7));
-
           return $profiles;
      }
 
-     /**
-      * Dapatkan nama cluster berdasarkan karakteristik
-      */
-     private function getClusterName($clusterId, $fictionRatios, $totalBooks)
+     private function getClusterName($fictionRatios)
      {
           $avgFiction = array_sum($fictionRatios) / count($fictionRatios);
-          $avgTotal = array_sum($totalBooks) / count($totalBooks);
-
-          if ($avgFiction > 0.7) {
-               return $avgTotal > 10 ? 'Pecinta Fiksi Aktif' : 'Pembaca Fiksi Kasual';
-          } elseif ($avgFiction < 0.3) {
-               return 'Pencari Pengetahuan'; // Non-fiksi dominan
-          } else {
-               return 'Pembaca Seimbang'; // Mixed
-          }
+          if ($avgFiction > 0.7) return 'Pembaca Fiksi';
+          if ($avgFiction < 0.3) return 'Pembaca Non-Fiksi';
+          return 'Pembaca Seimbang';
      }
 
-     /**
-      * Dapatkan deskripsi cluster
-      */
-     private function getClusterDescription($clusterId, $fictionRatios, $totalBooks)
+     private function getClusterDescription($fictionRatios)
      {
           $avgFiction = array_sum($fictionRatios) / count($fictionRatios);
-          $avgTotal = array_sum($totalBooks) / count($totalBooks);
-
-          if ($avgFiction > 0.7) {
-               return 'Menyukai cerita imajinatif, novel, dan karya sastra';
-          } elseif ($avgFiction < 0.3) {
-               return 'Fokus pada pembelajaran, pengembangan diri, dan fakta';
-          } else {
-               return 'Menikmati berbagai jenis bacaan, fleksibel dalam memilih genre';
-          }
+          if ($avgFiction > 0.7) return 'Cenderung menikmati cerita imajinatif, novel, dan karya sastra.';
+          if ($avgFiction < 0.3) return 'Lebih fokus pada pembelajaran, pengembangan diri, dan buku berdasarkan fakta.';
+          return 'Menikmati berbagai jenis bacaan, baik fiksi maupun non-fiksi secara seimbang.';
      }
 
-     // Helper methods untuk mendapatkan data
+     // === PERBAIKAN LOGIKA PENCARIAN BUKU ===
      private function getFictionBooksRead($userId)
      {
           return ProgressBaca::where('user_id', $userId)
                ->join('buku', 'progress_baca.buku_id', '=', 'buku.id')
                ->join('kategori_utama', 'buku.kategori_utama_id', '=', 'kategori_utama.id')
-               ->where('kategori_utama.nama', 'LIKE', '%fiksi%')
+               ->where('kategori_utama.nama', 'Fiksi') // Pencarian nama yang eksak
                ->count();
      }
 
@@ -290,27 +214,22 @@ class SimpleKMeansService
           return ProgressBaca::where('user_id', $userId)
                ->join('buku', 'progress_baca.buku_id', '=', 'buku.id')
                ->join('kategori_utama', 'buku.kategori_utama_id', '=', 'kategori_utama.id')
-               ->where('kategori_utama.nama', 'NOT LIKE', '%fiksi%')
+               ->where('kategori_utama.nama', '!=', 'Fiksi') // Semua yang bukan Fiksi
                ->count();
      }
+     // === AKHIR PERBAIKAN ===
 
      private function getAverageRating($userId)
      {
           return Rating::where('user_id', $userId)->avg('rating');
      }
 
-     /**
-      * Dapatkan cluster user tertentu
-      */
      public function getUserCluster($userId)
      {
           $clusters = Cache::get('user_clusters', []);
           return $clusters[$userId] ?? null;
      }
 
-     /**
-      * Dapatkan profil semua cluster
-      */
      public function getClusterProfiles()
      {
           return Cache::get('cluster_profiles', []);

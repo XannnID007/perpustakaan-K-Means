@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('kategori_utama_id')             // Baru tambahkan foreign key-nya
                 ->references('id')->on('kategori_utama')
                 ->onDelete('cascade');
-            $table->string('nama', 100);
+            $table->string('nama', 50);
             $table->string('slug', 100);
             $table->text('deskripsi')->nullable();
             $table->timestamps();
