@@ -1,162 +1,237 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Buku;
-use App\Models\KategoriUtama;
+use App\Models\Rating;
 use App\Models\SubKategori;
+use App\Models\ProgressBaca;
 use Illuminate\Http\Request;
+use App\Models\KategoriUtama;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 class BukuController extends Controller
 {
-    public function __construct()
+    public function index(Request $request)
     {
-        $this->middleware(['auth', 'admin']);
-    }
+        $query = Buku::with(['kategoriUtama', 'subKategori'])
+            ->where('aktif', true);
 
-    public function index()
-    {
-        $buku = Buku::with(['kategoriUtama', 'subKategori'])
-            ->when(request('search'), function ($query) {
-                $query->where('judul', 'like', '%' . request('search') . '%')
-                    ->orWhere('penulis', 'like', '%' . request('search') . '%');
-            })
-            ->paginate(10);
+        // Filter pencarian
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('judul', 'like', '%' . $request->search . '%')
+                    ->orWhere('penulis', 'like', '%' . $request->search . '%');
+            });
+        }
 
-        return view('admin.buku.index', compact('buku'));
-    }
+        // Filter kategori utama
+        if ($request->kategori_utama) {
+            $query->where('kategori_utama_id', $request->kategori_utama);
+        }
 
-    public function create()
-    {
+        // Filter sub kategori
+        if ($request->sub_kategori) {
+            $query->where('sub_kategori_id', $request->sub_kategori);
+        }
+
+        // Sorting
+        switch ($request->sort) {
+            case 'terbaru':
+                $query->latest();
+                break;
+            case 'terpopuler':
+                $query->orderBy('total_pembaca', 'desc');
+                break;
+            case 'rating':
+                $query->orderBy('rating_rata_rata', 'desc');
+                break;
+            case 'judul':
+                $query->orderBy('judul');
+                break;
+            default:
+                $query->latest();
+        }
+
+        $buku = $query->paginate(12);
         $kategoriUtama = KategoriUtama::with('subKategori')->get();
-        return view('admin.buku.create', compact('kategoriUtama'));
-    }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'penulis' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'kategori_utama_id' => 'required|exists:kategori_utama,id',
-            'sub_kategori_id' => 'required|exists:sub_kategori,id',
-            'tahun_terbit' => 'nullable|numeric|min:1900|max:' . date('Y'),
-            'gambar_sampul' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'file_pdf' => 'required|mimes:pdf|max:50000',
-        ]);
-
-        $data = $request->only(['judul', 'penulis', 'deskripsi', 'kategori_utama_id', 'sub_kategori_id', 'tahun_terbit']);
-
-        // Upload cover image
-        if ($request->hasFile('gambar_sampul')) {
-            $fileName = time() . '_cover.' . $request->gambar_sampul->extension();
-            $request->gambar_sampul->storeAs('public/covers', $fileName);
-            $data['gambar_sampul'] = $fileName;
-        }
-
-        // Upload PDF file
-        if ($request->hasFile('file_pdf')) {
-            $pdfFileName = time() . '_' . Str::slug($request->judul) . '.pdf';
-            $request->file_pdf->storeAs('books', $pdfFileName);
-            $data['file_pdf'] = $pdfFileName;
-            $data['ukuran_file'] = $request->file_pdf->getSize();
-        }
-
-        Buku::create($data);
-
-        return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil ditambahkan!');
+        return view('buku.index', compact('buku', 'kategoriUtama'));
     }
 
     public function show(Buku $buku)
     {
-        $buku->load(['kategoriUtama', 'subKategori', 'progressBaca', 'rating']);
-        return view('admin.buku.show', compact('buku'));
+        $buku->load(['kategoriUtama', 'subKategori', 'rating.user']);
+
+        $userProgress = null;
+        $userRating = null;
+
+        if (auth()->check()) {
+            $userProgress = ProgressBaca::where('user_id', auth()->id())
+                ->where('buku_id', $buku->id)
+                ->first();
+
+            $userRating = Rating::where('user_id', auth()->id())
+                ->where('buku_id', $buku->id)
+                ->first();
+        }
+
+        // Buku serupa
+        $bukuSerupa = Buku::where('aktif', true)
+            ->where('id', '!=', $buku->id)
+            ->where(function ($query) use ($buku) {
+                $query->where('sub_kategori_id', $buku->sub_kategori_id)
+                    ->orWhere('kategori_utama_id', $buku->kategori_utama_id);
+            })
+            ->limit(6)
+            ->get();
+
+        return view('buku.show', compact('buku', 'userProgress', 'userRating', 'bukuSerupa'));
     }
 
-    public function edit(Buku $buku)
+    public function read(Buku $buku)
     {
-        $kategoriUtama = KategoriUtama::with('subKategori')->get();
-        return view('admin.buku.edit', compact('buku', 'kategoriUtama'));
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('message', 'Silakan login untuk membaca buku');
+        }
+
+        if (!$buku->aktif) {
+            abort(404, 'Buku tidak tersedia');
+        }
+
+        // Cek apakah file PDF ada
+        $pdfPath = storage_path('app/books/' . $buku->file_pdf);
+        if (!File::exists($pdfPath)) {
+            Log::error('PDF file not found', [
+                'book_id' => $buku->id,
+                'file_pdf' => $buku->file_pdf,
+                'path' => $pdfPath
+            ]);
+
+            return back()->with('error', 'File PDF tidak ditemukan. Silakan hubungi administrator.');
+        }
+
+        // Pastikan total halaman tidak kosong
+        if (!$buku->total_halaman || $buku->total_halaman < 1) {
+            // Coba hitung halaman dari file PDF jika memungkinkan
+            $defaultPages = 100;
+            $buku->update(['total_halaman' => $defaultPages]);
+            Log::info('Set default page count', [
+                'book_id' => $buku->id,
+                'total_pages' => $defaultPages
+            ]);
+        }
+
+        // Update atau create progress
+        $progress = ProgressBaca::updateOrCreate(
+            ['user_id' => auth()->id(), 'buku_id' => $buku->id],
+            [
+                'total_halaman' => $buku->total_halaman,
+                'halaman_sekarang' => 1, // Set default jika belum pernah baca
+                'terakhir_baca' => now()
+            ]
+        );
+
+        // Pastikan halaman sekarang tidak melebihi total halaman
+        if ($progress->halaman_sekarang > $progress->total_halaman) {
+            $progress->update(['halaman_sekarang' => 1]);
+        }
+
+        // Update total pembaca jika pertama kali baca
+        if ($progress->wasRecentlyCreated) {
+            $buku->increment('total_pembaca');
+            Log::info('New reader added', [
+                'book_id' => $buku->id,
+                'user_id' => auth()->id(),
+                'total_readers' => $buku->fresh()->total_pembaca
+            ]);
+        }
+
+        return view('buku.read', compact('buku', 'progress'));
     }
 
-    public function update(Request $request, Buku $buku)
+    public function streamPdf(Buku $buku)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'penulis' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'kategori_utama_id' => 'required|exists:kategori_utama,id',
-            'sub_kategori_id' => 'required|exists:sub_kategori,id',
-            'tahun_terbit' => 'nullable|numeric|min:1900|max:' . date('Y'),
-            'gambar_sampul' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'file_pdf' => 'nullable|mimes:pdf|max:50000',
+        // Log request untuk debugging
+        Log::info('PDF stream requested', [
+            'book_id' => $buku->id,
+            'user_id' => auth()->id() ?? 'guest',
+            'file_pdf' => $buku->file_pdf
         ]);
 
-        $data = $request->only(['judul', 'penulis', 'deskripsi', 'kategori_utama_id', 'sub_kategori_id', 'tahun_terbit']);
-
-        // Update cover image
-        if ($request->hasFile('gambar_sampul')) {
-            // Delete old image
-            if ($buku->gambar_sampul) {
-                Storage::delete('public/covers/' . $buku->gambar_sampul);
-            }
-
-            $fileName = time() . '_cover.' . $request->gambar_sampul->extension();
-            $request->gambar_sampul->storeAs('public/covers', $fileName);
-            $data['gambar_sampul'] = $fileName;
+        // Cek autentikasi
+        if (!auth()->check()) {
+            Log::warning('Unauthorized PDF access attempt', ['book_id' => $buku->id]);
+            abort(403, 'Unauthorized - Please login first');
         }
 
-        // Update PDF file
-        if ($request->hasFile('file_pdf')) {
-            // Delete old PDF
-            if ($buku->file_pdf) {
-                Storage::delete('books/' . $buku->file_pdf);
-            }
-
-            $pdfFileName = time() . '_' . Str::slug($request->judul) . '.pdf';
-            $request->file_pdf->storeAs('books', $pdfFileName);
-            $data['file_pdf'] = $pdfFileName;
-            $data['ukuran_file'] = $request->file_pdf->getSize();
+        // Cek status buku
+        if (!$buku->aktif) {
+            Log::warning('Inactive book access attempt', ['book_id' => $buku->id]);
+            abort(404, 'Book not available');
         }
 
-        $buku->update($data);
-
-        return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil diperbarui!');
-    }
-
-    public function destroy(Buku $buku)
-    {
-        // Delete files
-        if ($buku->gambar_sampul) {
-            Storage::delete('public/covers/' . $buku->gambar_sampul);
-        }
-        if ($buku->file_pdf) {
-            Storage::delete('books/' . $buku->file_pdf);
+        // Cek file PDF ada
+        if (!$buku->file_pdf) {
+            Log::error('PDF filename is empty', ['book_id' => $buku->id]);
+            abort(404, 'PDF file not configured');
         }
 
-        $buku->delete();
+        $path = storage_path('app/books/' . $buku->file_pdf);
 
-        return redirect()->route('admin.buku.index')->with('success', 'Buku berhasil dihapus!');
-    }
+        // Validasi file exists
+        if (!File::exists($path)) {
+            Log::error('PDF file not found on disk', [
+                'book_id' => $buku->id,
+                'file_pdf' => $buku->file_pdf,
+                'path' => $path,
+                'storage_path' => storage_path('app/books/'),
+                'files_in_directory' => File::exists(storage_path('app/books/')) ? File::files(storage_path('app/books/')) : 'Directory not exists'
+            ]);
+            abort(404, 'PDF file not found on server');
+        }
 
-    public function getSubKategori(Request $request)
-    {
-        // Validasi request
-        $request->validate([
-            'kategori_utama_id' => 'required|exists:kategori_utama,id'
+        // Validasi ukuran file
+        $fileSize = File::size($path);
+        if ($fileSize === 0) {
+            Log::error('PDF file is empty', [
+                'book_id' => $buku->id,
+                'file_pdf' => $buku->file_pdf,
+                'path' => $path
+            ]);
+            abort(404, 'PDF file is corrupted or empty');
+        }
+
+        // Validasi MIME type
+        $mimeType = File::mimeType($path);
+        if ($mimeType !== 'application/pdf') {
+            Log::error('Invalid file type', [
+                'book_id' => $buku->id,
+                'file_pdf' => $buku->file_pdf,
+                'mime_type' => $mimeType
+            ]);
+            abort(415, 'Invalid file type. Expected PDF.');
+        }
+
+        Log::info('PDF stream successful', [
+            'book_id' => $buku->id,
+            'file_size' => $fileSize,
+            'mime_type' => $mimeType
         ]);
 
-        try {
-            $subKategori = SubKategori::where('kategori_utama_id', $request->kategori_utama_id)
-                ->select('id', 'nama')
-                ->get();
-
-            return response()->json($subKategori);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Gagal mengambil sub kategori'], 500);
-        }
+        // Return file response dengan header yang tepat
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Length' => $fileSize,
+            'Content-Disposition' => 'inline; filename="' . str_replace('"', '', $buku->judul) . '.pdf"',
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=3600', // Cache 1 jam untuk performa
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN'
+        ]);
     }
 }
