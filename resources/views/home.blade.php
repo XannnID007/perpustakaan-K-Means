@@ -7,15 +7,15 @@
         <div class="carousel-container relative h-96 md:h-[500px]" id="heroCarousel">
             <!-- Slide 1 -->
             <div class="carousel-slide active h-full flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
-                style="background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');">
+                style="background-image: url('images/bg-3.jpg');">
                 <!-- Dark overlay -->
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">
-                        Selamat Datang di Perpustakaan Digital
+                        Selamat Datang di Perpustakaan Digital Relib
                     </h1>
                     <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
-                        Temukan ribuan buku dari berbagai kategori. Baca kapan saja, di mana saja dengan pengalaman membaca
+                        Temukan buku dari berbagai kategori. Baca kapan saja, di mana saja dengan pengalaman membaca
                         yang nyaman.
                     </p>
                 </div>
@@ -23,23 +23,22 @@
 
             <!-- Slide 2 -->
             <div class="carousel-slide h-full flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
-                style="background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2128&q=80');">
+                style="background-image: url('images/bg-1.jpg');">
                 <!-- Dark overlay -->
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">
-                        Koleksi Lengkap
+                        Sistem Terintegrasi Algoritma K-Means
                     </h1>
                     <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
-                        Ribuan buku dari berbagai genre dan kategori menanti Anda. Dari fiksi hingga non-fiksi, temukan
-                        bacaan favorit Anda.
+                        Anda akan menemukan buku-buku yang sesuai dengan minat dan preferensi Anda.
                     </p>
                 </div>
             </div>
 
             <!-- Slide 3 -->
             <div class="carousel-slide h-full flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
-                style="background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');">
+                style="background-image: url('images/bg-2.jpg');">
                 <!-- Dark overlay -->
                 <div class="absolute inset-0 bg-black/40"></div>
                 <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

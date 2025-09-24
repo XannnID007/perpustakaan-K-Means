@@ -105,11 +105,11 @@
             </div>
         </div>
 
-        <!-- Books Grid -->
+        <!-- Books Grid - FIXED STRUCTURE -->
         <div id="booksGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
             @forelse($buku as $item)
-                <div class="card">
-                    <div class="p-3">
+                <div class="card h-full flex flex-col">
+                    <div class="p-3 flex-1 flex flex-col">
                         <a href="{{ route('buku.show', $item) }}" class="block">
                             <div
                                 class="aspect-[3/4] bg-primary-100 rounded mb-3 flex items-center justify-center overflow-hidden">
@@ -127,14 +127,15 @@
                             </div>
                         </a>
 
-                        <div class="space-y-2">
-                            <h3 class="font-medium text-sm text-gray-900 line-clamp-2">
+                        <!-- Content dengan flex untuk push button ke bawah -->
+                        <div class="flex-1 flex flex-col">
+                            <h3 class="font-medium text-sm text-gray-900 mb-1 line-clamp-2 flex-1">
                                 <a href="{{ route('buku.show', $item) }}">{{ $item->judul }}</a>
                             </h3>
-                            <p class="text-xs text-gray-600">{{ $item->penulis }}</p>
+                            <p class="text-xs text-gray-600 mb-2">{{ $item->penulis }}</p>
 
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="text-gray-500">{{ $item->subKategori->nama }}</span>
+                            <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                                <span class="truncate">{{ $item->subKategori->nama }}</span>
                                 <div class="flex items-center space-x-1">
                                     <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                         <path
@@ -145,17 +146,17 @@
                                 </div>
                             </div>
 
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs text-gray-500 mb-3">
                                 {{ number_format($item->total_pembaca) }} pembaca
                             </div>
 
+                            <!-- Button di bagian paling bawah dengan mt-auto -->
                             @auth
-                                <a href="{{ route('buku.show', $item) }}"
-                                    class="block btn btn-primary w-full text-xs py-1.5 mt-2">
+                                <a href="{{ route('buku.show', $item) }}" class="btn btn-primary w-full text-xs py-2 mt-auto">
                                     Lihat Detail
                                 </a>
                             @else
-                                <div class="text-center">
+                                <div class="text-center mt-auto">
                                     <a href="{{ route('login') }}" class="text-xs text-primary-600">Login untuk membaca</a>
                                 </div>
                             @endauth
@@ -251,8 +252,8 @@
 
         <!-- Pagination -->
         @if ($buku->hasPages())
-            <div class="flex justify-center">
-                {{ $buku->appends(request()->query())->links() }}
+            <div class="pagination-wrapper">
+                {{ $buku->links() }}
             </div>
         @endif
     </div>
@@ -316,6 +317,40 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        /* Ensure consistent card heights */
+        .card {
+            transition: all 0.2s ease-in-out;
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Force equal height cards dengan flex */
+        #booksGrid .card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #booksGrid .card>div {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* Pastikan button selalu di bawah */
+        #booksGrid .card .flex-1:last-child {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #booksGrid .card .mt-auto {
+            margin-top: auto;
         }
     </style>
 @endsection

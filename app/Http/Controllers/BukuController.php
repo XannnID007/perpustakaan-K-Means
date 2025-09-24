@@ -164,4 +164,17 @@ class BukuController extends Controller
             'Expires' => '0'
         ]);
     }
+
+    public function getSubKategoriByKategori(Request $request)
+    {
+        $kategori_utama_id = $request->query('kategori_utama_id');
+
+        if (!$kategori_utama_id) {
+            return response()->json([]);
+        }
+
+        $subKategori = SubKategori::where('kategori_utama_id', $kategori_utama_id)->get();
+
+        return response()->json($subKategori);
+    }
 }

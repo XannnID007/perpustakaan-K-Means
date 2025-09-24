@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\BukuController as AdminBukuController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ClusteringTestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
 Route::get('/buku/{buku}', [BukuController::class, 'show'])->name('buku.show');
+
+Route::get('/get-sub-kategori-by-kategori', [BukuController::class, 'getSubKategoriByKategori'])->name('get-sub-kategori');
 
 // Authenticated User Routes
 Route::middleware('auth')->group(function () {
@@ -59,6 +62,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // User Management
     Route::resource('users', AdminUserController::class)->only(['index', 'show']);
+
+    // Clustering Test
+    Route::get('/clustering/test', [ClusteringTestController::class, 'index'])->name('clustering.test');
 
     // Reports
     Route::get('/laporan', [App\Http\Controllers\Admin\LaporanController::class, 'index'])->name('laporan');
